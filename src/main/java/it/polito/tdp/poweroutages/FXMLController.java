@@ -5,9 +5,12 @@
 package it.polito.tdp.poweroutages;
 
 import java.net.URL;
+import java.util.List;
 import java.util.ResourceBundle;
+
 import it.polito.tdp.poweroutages.model.Model;
 import it.polito.tdp.poweroutages.model.Nerc;
+import it.polito.tdp.poweroutages.model.PowerOutage;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.ComboBox;
@@ -39,6 +42,35 @@ public class FXMLController {
     @FXML
     void doRun(ActionEvent event) {
     	txtResult.clear();
+    	
+    	if(cmbNerc.getValue() == null)
+    		txtResult.setText("Selezionare un NERC");
+    	
+    	if(txtYears.getText().isBlank() || txtHours.getText().isBlank())
+    		txtResult.setText("Inserire un parametro massimo di ore e uno di anni");
+    	
+    	Nerc nerc = null;
+    	int anni = 0;
+    	int ore = 0;
+    	
+    	try {
+    		nerc = cmbNerc.getValue();
+    		anni = Integer.parseInt(txtYears.getText());
+    		ore = Integer.parseInt(txtHours.getText());
+    		
+    		List<PowerOutage> lista = model.calcolaWorstCase(nerc, anni, ore);
+    		
+    		txtResult.setStyle("-fx-font-family: monospace");
+    		StringBuilder sb = new StringBuilder();
+    		for(PowerOutage po : lista)
+    			sb.append(po.toString());
+    		
+    		txtResult.appendText(sb.toString());
+    		}catch(NumberFormatException e) {
+    			txtResult.setText("Inserire solo caratteri numerici per ore e anni");
+    		}
+    	
+    	
     }
 
     @FXML // This method is called by the FXMLLoader when initialization is complete
@@ -54,5 +86,6 @@ public class FXMLController {
     
     public void setModel(Model model) {
     	this.model = model;
+    	cmbNerc.getItems().addAll(model.getNercList());
     }
 }
